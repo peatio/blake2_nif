@@ -2,7 +2,8 @@
 -export([init/1,
 	update/2,
 	final/1,
-	hash/2]).
+	hash/2,
+    hash_with_key/3]).
 -on_load(init/0).
 
 -define(APPNAME, blake2_nif).
@@ -22,6 +23,10 @@ final(_State) ->
 
 -spec hash(non_neg_integer(), binary()) -> {ok, binary()} | {error, atom()}.
 hash(_Bits,_Data) ->
+	"NIF library not loaded".
+
+-spec hash_with_key(non_neg_integer(), binary(), binary()) -> {ok, binary()} | {error, atom()}.
+hash_with_key(_Bits,_Key,_Data) ->
 	"NIF library not loaded".
 
 
