@@ -149,6 +149,42 @@ int blake2b_init_key( blake2b_state *S, size_t outlen, const void *key, size_t k
   }
   return 0;
 }
+int blake2b_init_key_personal( blake2b_state *S, size_t outlen, const void *key, size_t keylen, const void *personal, size_t personallen )
+{
+  blake2b_param P[1];
+
+  if ( ( !outlen ) || ( outlen > BLAKE2B_OUTBYTES ) ) return -1;
+
+  if ( !key || !keylen || keylen > BLAKE2B_KEYBYTES ) return -1;
+  
+  if ( !personal || !personallen || personallen > BLAKE2B_PERSONALBYTES ) return -1;
+
+  P->digest_length = (uint8_t)outlen;
+  P->key_length    = (uint8_t)keylen;
+  P->fanout        = 1;
+  P->depth         = 1;
+  store32( &P->leaf_length, 0 );
+  store32( &P->node_offset, 0 );
+  store32( &P->xof_length, 0 );
+  P->node_depth    = 0;
+  P->inner_length  = 0;
+  memcpy( P->personal, personal, personallen);
+
+  memset( P->reserved, 0, sizeof( P->reserved ) );
+  memset( P->salt,     0, sizeof( P->salt ) );
+  memset( P->personal, 0, sizeof( P->personal ) );
+
+  if( blake2b_init_param( S, P ) < 0 ) return -1;
+
+  {
+    uint8_t block[BLAKE2B_BLOCKBYTES];
+    memset( block, 0, BLAKE2B_BLOCKBYTES );
+    memcpy( block, key, keylen );
+    blake2b_update( S, block, BLAKE2B_BLOCKBYTES );
+    secure_zero_memory( block, BLAKE2B_BLOCKBYTES ); /* Burn the key from stack */
+  }
+  return 0;
+}
 
 #define G(r,i,a,b,c,d)                      \
   do {                                      \
@@ -288,6 +324,34 @@ int blake2b( void *out, size_t outlen, const void *in, size_t inlen, const void 
   if( keylen > 0 )
   {
     if( blake2b_init_key( S, outlen, key, keylen ) < 0 ) return -1;
+  }
+  else
+  {
+    if( blake2b_init( S, outlen ) < 0 ) return -1;
+  }
+
+  blake2b_update( S, ( const uint8_t * )in, inlen );
+  blake2b_final( S, out, outlen );
+  return 0;
+}
+int blake2b_full( void *out, size_t outlen, const void *in, size_t inlen, const void *key, size_t keylen, const void *personal, size_t personallen)
+{
+  blake2b_state S[1];
+
+  /* Verify parameters */
+  if ( NULL == in && inlen > 0 ) return -1;
+
+  if ( NULL == out ) return -1;
+
+  if( NULL == key && keylen > 0 ) return -1;
+
+  if( !outlen || outlen > BLAKE2B_OUTBYTES ) return -1;
+
+  if( keylen > BLAKE2B_KEYBYTES ) return -1;
+
+  if( keylen > 0 )
+  {
+    if( blake2b_init_key_personal( S, outlen, key, keylen, personal, personallen) < 0 ) return -1;
   }
   else
   {
