@@ -348,8 +348,9 @@ int blake2b_full( void *out, size_t outlen, const void *in, size_t inlen, const 
   if( !outlen || outlen > BLAKE2B_OUTBYTES ) return -1;
 
   if( keylen > BLAKE2B_KEYBYTES ) return -1;
+  if( personallen > BLAKE2B_PERSONALBYTES ) return -1;
 
-  if( keylen > 0 )
+  if( keylen > 0 || personallen > 0)
   {
     if( blake2b_init_key_personal( S, outlen, key, keylen, personal, personallen) < 0 ) return -1;
   }
