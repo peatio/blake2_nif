@@ -141,9 +141,6 @@ ERL_NIF_TERM blake2_full_hash(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[
     enif_inspect_binary(env, argv[3], &bin);
     enif_alloc_binary_compat(env, (size_t)(bits/8), &out);
 
-    if(personal.size <=0){
-        return enif_make_tuple2(env, enif_make_atom(env, "error"), enif_make_atom(env, "personal size is 0"));
-    }
     int r = blake2b_full((uint8_t *)out.data, (bits/8), (const void *)bin.data, bin.size, (const void *)key.data, key.size, (const void*)personal.data, personal.size);
     if (r == 0) {
         return enif_make_tuple2(env, enif_make_atom(env, "ok"), enif_make_binary(env, &out));

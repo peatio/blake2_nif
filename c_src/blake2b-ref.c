@@ -168,11 +168,11 @@ int blake2b_init_key_personal( blake2b_state *S, size_t outlen, const void *key,
   store32( &P->xof_length, 0 );
   P->node_depth    = 0;
   P->inner_length  = 0;
-  memcpy( P->personal, personal, personallen);
 
   memset( P->reserved, 0, sizeof( P->reserved ) );
   memset( P->salt,     0, sizeof( P->salt ) );
-  memset( P->personal, 0, sizeof( P->personal ) );
+  //memset( P->personal, 0, sizeof( P->personal ) );
+  memset( P->personal, personal, personallen );
 
   if( blake2b_init_param( S, P ) < 0 ) return -1;
 
@@ -344,10 +344,13 @@ int blake2b_full( void *out, size_t outlen, const void *in, size_t inlen, const 
   if ( NULL == out ) return -1;
 
   if( NULL == key && keylen > 0 ) return -1;
+  
+  if( NULL == personal  && personallen > 0 ) return -1;
 
   if( !outlen || outlen > BLAKE2B_OUTBYTES ) return -1;
 
   if( keylen > BLAKE2B_KEYBYTES ) return -1;
+  
   if( personallen > BLAKE2B_PERSONALBYTES ) return -1;
 
   if( keylen > 0 || personallen > 0)
