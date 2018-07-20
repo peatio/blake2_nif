@@ -3,7 +3,7 @@
 	update/2,
 	final/1,
 	hash/2,
-    full_hash/4]).
+    hash_with_personal/3]).
 -on_load(init/0).
 
 -define(APPNAME, blake2_nif).
@@ -25,11 +25,10 @@ final(_State) ->
 hash(_Bits,_Data) ->
 	"NIF library not loaded".
 
--spec full_hash(non_neg_integer(), binary(), binary(), binary()) -> {ok, binary()} | {error, atom()}.
-full_hash(_Bits,_Key,_Personal,_Data) ->
+
+-spec hash_with_personal(non_neg_integer(), binary(), binary()) -> {ok, binary()} | {error, atom()}.
+hash_with_personal(_Bits,_Personal,_Data) ->
 	"NIF library not loaded".
-
-
 
 
 init() ->
