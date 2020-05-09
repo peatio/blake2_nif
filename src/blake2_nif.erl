@@ -11,24 +11,24 @@
 
 -spec init(non_neg_integer()) -> {ok, binary()} | {error, atom()}.
 init(_Bits) ->
-	"NIF library not loaded".
+	erlang:nif_error({error, not_loaded}).
 
 -spec update(binary(), binary()) -> {ok, binary()} | {error, atom()}.
 update(_State, _Data) ->
-	"NIF library not loaded".
+	erlang:nif_error({error, not_loaded}).
 
 -spec final(binary()) -> {ok, binary()} | {error, atom()}.
 final(_State) ->
-	"NIF library not loaded".
+	erlang:nif_error({error, not_loaded}).
 
 -spec hash(non_neg_integer(), binary()) -> {ok, binary()} | {error, atom()}.
 hash(_Bits,_Data) ->
-	"NIF library not loaded".
+	erlang:nif_error({error, not_loaded}).
 
 
 -spec hash_with_personal(non_neg_integer(), binary(), binary()) -> {ok, binary()} | {error, atom()}.
 hash_with_personal(_Bits,_Personal,_Data) ->
-	"NIF library not loaded".
+	erlang:nif_error({error, not_loaded}).
 
 
 init() ->
@@ -45,6 +45,4 @@ init() ->
     end,
     erlang:load_nif(SoName, 0).
 
-not_loaded(Line) ->
-    exit({not_loaded, [{module, ?MODULE}, {line, Line}]}).
 
