@@ -17,6 +17,7 @@ ERL_NIF_TERM blake2_update(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
 ERL_NIF_TERM blake2_final(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
 ERL_NIF_TERM blake2_hash(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
 ERL_NIF_TERM blake2_hash_with_personal(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
+ERL_NIF_TERM blake2_hash_with_key(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]);
 
 // lifecycle
 int load(ErlNifEnv* env, void ** priv_data, ERL_NIF_TERM load_info);
@@ -30,7 +31,8 @@ static ErlNifFunc nif_funcs[] =
 	{"update", 2, blake2_update},
 	{"final", 1, blake2_final},
 	{"hash", 2, blake2_hash},
-    {"hash_with_personal", 3, blake2_hash_with_personal}
+    {"hash_with_personal", 3, blake2_hash_with_personal},
+    {"hash_with_key", 3, blake2_hash_with_key},
 };
 
 ERL_NIF_INIT(blake2_nif, nif_funcs, load, NULL, NULL, NULL)
@@ -141,6 +143,25 @@ ERL_NIF_TERM blake2_hash_with_personal(ErlNifEnv* env, int argc, const ERL_NIF_T
     enif_alloc_binary_compat(env, (size_t)(bits/8), &out);
 
     int r = blake2b_personal((uint8_t *)out.data, (bits/8), (const void *)bin.data, bin.size ,(const void *)personal.data);
+    if (r == 0) {
+        return enif_make_tuple2(env, enif_make_atom(env, "ok"), enif_make_binary(env, &out));
+    } else {
+        return enif_make_tuple2(env, enif_make_atom(env, "error"), enif_make_atom(env, "hash_failure"));
+    }
+}
+
+ERL_NIF_TERM blake2_hash_with_key(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+    int bits = 0;
+    enif_get_int(env, argv[0], &bits);
+
+    ErlNifBinary bin, key, out;
+    enif_inspect_binary(env, argv[1], &key);
+    enif_inspect_binary(env, argv[2], &bin);
+
+    enif_alloc_binary_compat(env, (size_t)(bits/8), &out);
+
+    int r = blake2b((uint8_t *)out.data, (bits/8), (const void *)bin.data, bin.size ,(const void *)key.data, key.size);
     if (r == 0) {
         return enif_make_tuple2(env, enif_make_atom(env, "ok"), enif_make_binary(env, &out));
     } else {
